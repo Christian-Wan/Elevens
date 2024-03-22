@@ -40,7 +40,7 @@ class DrawPanel extends JPanel implements MouseListener {
             }
         }
         g.setFont(new Font("Courier New", Font.BOLD, 20));
-        g.drawString("GET NEW CARDS", 150, 320);
+        g.drawString("START OVER", 165, 320);
         g.drawRect((int)button.getX(), (int)button.getY(), (int)button.getWidth(), (int)button.getHeight());
         g.drawString("Cards Left: " + (52 - removed.size()), 147, 350);
         g.drawString("Possible Moves: " + possibleMovies(), 147, 375);
@@ -90,14 +90,22 @@ class DrawPanel extends JPanel implements MouseListener {
             }
         }
         if (selected.size() == 3) {
-            String valid = "KQJ";
-            boolean works = true;
+            boolean hasKing = false;
+            boolean hasQueen = false;
+            boolean hasJack = false;
             for (Card card: selected) {
-                if (!valid.contains(card.getValue())) {
-                    works = false;
+                if (card.getValue().equals("K")) {
+                    hasKing = true;
                 }
+                else if (card.getValue().equals("Q")) {
+                    hasQueen = true;
+                }
+                else if (card.getValue().equals("J")) {
+                    hasJack = true;
+                }
+
             }
-            if (works) {
+            if (hasJack && hasKing && hasQueen) {
                 removed.add(selected.get(0).getSuit() + selected.get(0).getValue());
                 removed.add(selected.get(1).getSuit() + selected.get(1).getValue());
                 removed.add(selected.get(2).getSuit() + selected.get(2).getValue());
@@ -115,15 +123,23 @@ class DrawPanel extends JPanel implements MouseListener {
 
     private int possibleMovies() {
         int moves = 0;
-        int faces = 0;
         int val1 = 0;
         int val2 = 0;
-        String validFace = "KQJ";
+        int kings = 0;
+        int queens = 0;
+        int jacks = 0;
         for (int i = 0; i < hand.size(); i++) {
-            if (validFace.contains(hand.get(i).getValue())) {
-                faces++;
+            val1 = 0;
+            if (hand.get(i).getValue().equals("K")) {
+                kings++;
             }
-            if (hand.get(i).getValue().equals("A")) {
+            else if (hand.get(i).getValue().equals("Q")) {
+                queens++;
+            }
+            else if (hand.get(i).getValue().equals("J")) {
+                jacks++;
+            }
+            else if (hand.get(i).getValue().equals("A")) {
                 val1 = 1;
             }
             else {
@@ -132,6 +148,7 @@ class DrawPanel extends JPanel implements MouseListener {
                 } catch (NumberFormatException e) {}
             }
             for (int x = i + 1; x < hand.size(); x++) {
+                val2 = 0;
                 try {
                     if (hand.get(x).getValue().equals("A")) {
                         val2 = 1;
@@ -143,15 +160,13 @@ class DrawPanel extends JPanel implements MouseListener {
                     }
                 } catch (NumberFormatException e) {}
                 if (val1 + val2 == 11) {
+                    System.out.println(hand.get(i) + " " + hand.get(x));
                     moves++;
                 }
             }
         }
-        System.out.println(faces);
-        faces -= 2;
-        if (faces > 0) {
-            moves += faces;
-        }
+
+        moves += kings * queens * jacks;
         return moves;
     }
     public void mousePressed(MouseEvent e) {
@@ -160,6 +175,7 @@ class DrawPanel extends JPanel implements MouseListener {
 
         if (e.getButton() == 1) {
             if (button.contains(clicked)) {
+                removed.clear();
                 hand = Card.buildHand(removed);
                 System.out.println(hand);
                 selected.clear();
